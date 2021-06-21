@@ -77,3 +77,14 @@ class PatientDischargeDetails(models.Model):
     doctorFee=models.PositiveIntegerField(null=False)
     OtherCharge=models.PositiveIntegerField(null=False)
     total=models.PositiveIntegerField(null=False)
+    
+    
+class Queue(models.Model):
+	
+    queue_id = models.UUIDField(max_length=32, primary_key=True)
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+    max_capacity = models.IntegerField()
+    address_id = models.IntegerField()
+    address = models.CharField(max_length=30)
+    

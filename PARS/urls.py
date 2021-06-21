@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from HospitalSide import views
 from django.contrib.auth.views import LoginView,LogoutView
 
@@ -23,6 +23,10 @@ from django.contrib.auth.views import LoginView,LogoutView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.home_view,name=''),
+    path('api/v1/', include('HospitalSide.api.urls')),
+    path("api/payments/", include("mpesa.api.urls")),
+
+
 
 
     path('aboutus', views.aboutus_view),
@@ -64,6 +68,7 @@ urlpatterns = [
     path('delete-patient-from-hospital/<int:pk>', views.delete_patient_from_hospital_view,name='delete-patient-from-hospital'),
     path('update-patient/<int:pk>', views.update_patient_view,name='update-patient'),
     path('admin-add-patient', views.admin_add_patient_view,name='admin-add-patient'),
+    path('admin-sign-patient', views.admin_sign_patient_view,name='admin-sign-patient'),
     path('admin-approve-patient', views.admin_approve_patient_view,name='admin-approve-patient'),
     path('approve-patient/<int:pk>', views.approve_patient_view,name='approve-patient'),
     path('reject-patient/<int:pk>', views.reject_patient_view,name='reject-patient'),

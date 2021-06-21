@@ -14,19 +14,19 @@ def home_view(request):
         return HttpResponseRedirect('afterlogin')
     return render(request,'hospital/index.html')
     
-#for showing signup/login button for Receptionist(by Lungombe)
+#for showing signup/login button for Receptionist or It can be Hospital Admin(by Lungombe)
 def adminclick_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('afterlogin')
     return render(request,'hospital/adminclick.html')
 
-#for showing signup/login button for doctor(by Lungombe)
+#for showing signup/login button for doctor(by Lungombe 
 def doctorclick_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('afterlogin')
     return render(request,'hospital/doctorclick.html')
 
-#for showing signup/login button for patient(by Lungombe)
+#for showing signup/login button for patient(by Lungombe), this will be used if i want to extend the system to be used by patient via web app
 def patientclick_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('afterlogin')
@@ -87,7 +87,9 @@ def patient_signup_view(request):
     return render(request,'hospital/patientsignup.html',context=mydict)
 
 
-#-----------for checking user is doctor , patient or receptionist(by Lungombe)
+#-----------for checking user is doctor , patient or receptionist(by Lungombe), 
+#for patient is not very necessarily to be checked as they will be authenticated via mobile app
+
 def is_admin(user):
     return user.groups.filter(name='ADMIN').exists()
 def is_doctor(user):
@@ -115,15 +117,15 @@ def afterlogin_view(request):
 
 
 #---------------------------------------------------------------------------------
-#------------------------ RECEPTIONIST RELATED VIEWS START ------------------------------
+#------------------------ RECEPTIONIST OR HOSPITAL ADMIN RELATED VIEWS START -----
 #---------------------------------------------------------------------------------
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def admin_dashboard_view(request):
-    #for both table in admin dashboard
+    #for both table in hospital admin dashboard
     doctors=models.Doctor.objects.all().order_by('-id')
     patients=models.Patient.objects.all().order_by('-id')
-    #for three cards
+    #for three cards, the patient card is discarded now mpaka ntakapohitaji kuitumia baadae.
     doctorcount=models.Doctor.objects.all().filter(status=True).count()
     pendingdoctorcount=models.Doctor.objects.all().filter(status=False).count()
 
@@ -145,7 +147,7 @@ def admin_dashboard_view(request):
     return render(request,'hospital/admin_dashboard.html',context=mydict)
 
 
-# this view for sidebar click on receptionist page
+# this view for sidebar click on receptionist or hospital admin page
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def admin_doctor_view(request):
@@ -218,8 +220,7 @@ def admin_add_doctor_view(request):
         return HttpResponseRedirect('admin-view-doctor')
     return render(request,'hospital/admin_add_doctor.html',context=mydict)
     
-    
-
+   
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def admin_approve_doctor_view(request):
@@ -281,7 +282,30 @@ def delete_patient_from_hospital_view(request,pk):
     patient.delete()
     return redirect('admin-view-patient')
 
+@login_required(login_url='adminlogin')
+@user_passes_test(is_admin)
+def admin_sign_patient_view(request):
+    userForm=forms.PatientUserForm()
+    patientForm=forms.PatientForm()
+    mydict={'userForm':userForm,'patientForm':patientForm}
+    if request.method=='POST':
+        userForm=forms.PatientUserForm(request.POST)
+        patientForm=forms.PatientForm(request.POST, request.FILES)
+        if userForm.is_valid() and patientForm.is_valid():
+            user=userForm.save()
+            user.set_password(user.password)
+            user.save()
 
+            patient=patientForm.save(commit=False)
+            patient.user=user
+            patient.status=True
+            patient.save()
+
+            my_patient_group = Group.objects.get_or_create(name='PATIENT')
+            my_patient_group[0].user_set.add(user)
+
+        return HttpResponseRedirect('admin-view-patient')
+    return render(request,'hospital/admin_sign_patient.html',context=mydict)
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
@@ -336,7 +360,7 @@ def admin_add_patient_view(request):
 
 
 
-#------------------FOR APPROVING PATIENT BY RECEPTIONIST----------------------
+#------------------FOR APPROVING PATIENT BY RECEPTIONIST OR HOSPITAL ADMIN---
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def admin_approve_patient_view(request):
@@ -367,7 +391,7 @@ def reject_patient_view(request,pk):
 
 
 
-#--------------------- FOR DISCHARGING PATIENT BY RECEPTIONIST START-------------------------
+#--------------------- FOR DISCHARGING PATIENT BY RECEPTIONIST OR HOSPITAL ADMIN START------
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def admin_discharge_patient_view(request):
@@ -376,7 +400,7 @@ def admin_discharge_patient_view(request):
 
 
 
-
+# Discharge view will be used once is needed as for now its view should not be presented.
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def discharge_patient_view(request,pk):
@@ -404,7 +428,7 @@ def discharge_patient_view(request,pk):
             'total':(int(request.POST['roomCharge'])*int(d))+int(request.POST['doctorFee'])+int(request.POST['medicineCost'])+int(request.POST['OtherCharge'])
         }
         patientDict.update(feeDict)
-        #for updating to database patientDischargeDetails (pDD)
+        #for updating to database patientDischargeDetails (pDD), i will activate once needed.
         pDD=models.PatientDischargeDetails()
         pDD.patientId=pk
         pDD.patientName=patient.get_name
@@ -425,7 +449,8 @@ def discharge_patient_view(request,pk):
     return render(request,'hospital/patient_generate_bill.html',context=patientDict)
 
 
-#--------------for discharge patient bill (pdf) download and printing
+#--------------for discharge patient bill (pdf) download and printing, for now it is something hidden,
+#--------------I will activate once needed via web app in which has view already  or mobile to which screens should be developed
 import io
 from xhtml2pdf import pisa
 from django.template.loader import get_template
@@ -465,7 +490,7 @@ def download_pdf_view(request,pk):
 
 
 
-#-----------------APPOINTMENT START--------------------------------------------------------------------
+#-----------------By Mohamed Lungombe-Appointment should start here----------------------
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def admin_appointment_view(request):
@@ -527,7 +552,7 @@ def reject_appointment_view(request,pk):
     return redirect('admin-approve-appointment')
 
 #---------------------------------------------------------------------------------
-#------------------------ RECEPTIONIST RELATED VIEWS END -------------------------
+#------------------------ RECEPTIONIST OR HOSPITAL ADMIN RELATED VIEWS END -------
 #---------------------------------------------------------------------------------
 
 
@@ -539,7 +564,7 @@ def reject_appointment_view(request,pk):
 @login_required(login_url='doctorlogin')
 @user_passes_test(is_doctor)
 def doctor_dashboard_view(request):
-    #for three cards
+    #for three cards, patient card for is kinda hidden card
     patientcount=models.Patient.objects.all().filter(status=True,assignedDoctorId=request.user.id).count()
     appointmentcount=models.Appointment.objects.all().filter(status=True,doctorId=request.user.id).count()
     patientdischarged=models.PatientDischargeDetails.objects.all().distinct().filter(assignedDoctorName=request.user.first_name).count()
@@ -640,6 +665,13 @@ def delete_appointment_view(request,pk):
     return render(request,'hospital/doctor_delete_appointment.html',{'appointments':appointments,'doctor':doctor})
 
 
+# -----------------------QUEUE MANAGEMENT VIEWS----------------------------------
+
+def queue_view(request):
+	queuelist = []
+	for queue in  queues:
+		queuelist.append(queue_id)
+		return render(request,'hospital/doctor_view_appointment.html',{'doctor':doctor})
 
 #--------------------------------------------------------------------------------
 #------------------------ DOCTOR RELATED VIEWS END ------------------------------
@@ -648,7 +680,7 @@ def delete_appointment_view(request,pk):
 
 
 #---------------------------------------------------------------------------------
-#------------------------ PATIENT RELATED VIEWS START ------------------------------
+#------------------------ PATIENT RELATED VIEWS START, WILL BE USED ONCE NEEDED --
 #---------------------------------------------------------------------------------
 @login_required(login_url='patientlogin')
 @user_passes_test(is_patient)

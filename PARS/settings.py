@@ -26,7 +26,15 @@ SECRET_KEY = 'jeb@(=%43#kl7kr4xgq0p_^y#2mgpvi!dp%dm!s#xoam8&6h1-'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+'10.0.2.2', #needed for Android emulator
+'127.0.0.1', 'localhost']
+
+# CORS for Http
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:8081',
+)
 
 
 # Application definition
@@ -40,9 +48,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'HospitalSide',
     'widget_tweaks',
+    'rest_framework',
+    "rest_framework_api_key",
+    'mpesa',
+     # CORS
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+        # CORS
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+       # Other Middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
