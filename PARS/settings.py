@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'rest_framework',
     "rest_framework_api_key",
-    'mpesa',
      # CORS
     'corsheaders',
 ]

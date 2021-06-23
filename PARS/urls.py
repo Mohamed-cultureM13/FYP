@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.home_view,name=''),
     path('api/v1/', include('HospitalSide.api.urls')),
-    path("api/payments/", include("mpesa.api.urls")),
+    #path("api/payments/", include("mpesa.api.urls")),
 
 
 

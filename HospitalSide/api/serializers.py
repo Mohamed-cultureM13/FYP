@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from HospitalSide.models import Appointment, Doctor, Patient
 from django.contrib.auth.models import User
 	   
